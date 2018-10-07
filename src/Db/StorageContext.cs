@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using YoutubeCollector.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
+using Npgsql;
+using YoutubeCollector.Lib;
+
+namespace YoutubeCollector.Db {
+    public class StorageContext : DbContext {
+        private readonly bool? _logSql = null;
+        private readonly SettingsProvider _settingsProvider = new SettingsProvider(null);
+
+        public StorageContext() {}
+
+        public StorageContext(bool? logSql = null, SettingsProvider settingsProvider = null) {
+            if (logSql != null) _logSql = logSql;
+            if (settingsProvider != null) _settingsProvider = settingsProvider;
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+            base.OnConfiguring(optionsBuilder);
+            if (!optionsBuilder.IsConfigured) {
+                // devenv$ docker run -d --name pg -p 5432:5432 --restart always postgres:alpine
+
+                var cfg = new SettingsProvider(null);
+                var cb = new NpgsqlConnectionStringBuilder(cfg.PgConnectionString);
+                var pgHost = cfg.PgHost;
+                if(pgHost != null) cb.Host = pgHost;
+                optionsBuilder.UseNpgsql(cb.ConnectionString);
+
+                if (_logSql ?? cfg.LogSql) {
+                    optionsBuilder.UseLoggerFactory(new ConsoleLoggerFactory());
+                }
+            }
+        }
+
+        public DbSet<Video> Videos { get; set; }
+        public DbSet<Statistics> Statistics { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder) {
+            var video = builder.Entity<Video>();
+            video.HasKey(k => k.Id);
+            video.HasIndex(k => k.HasComments);
+
+            var comment = builder.Entity<Comment>();
+            comment.HasKey(k => k.Id);
+            comment.HasIndex(k => k.CommentType);
+        }
+    }
+
+    public class ConsoleLogger : ILogger {
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) => Console.WriteLine($"{logLevel}:{formatter(state, exception)}");
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public IDisposable BeginScope<TState>(TState state) => null;
+    }
+
+    public class ConsoleLoggerFactory : ILoggerFactory{
+        public void Dispose() {}
+        public ILogger CreateLogger(string categoryName) => new ConsoleLogger();
+        public void AddProvider(ILoggerProvider provider) {}
+    }
+}

@@ -9,11 +9,25 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using YoutubeCollector.collectors;
+using YoutubeCollector.Db;
+using YoutubeCollector.Lib;
 
-namespace FacebookCollector {
+namespace YoutubeCollector {
     public class Startup {
-        public Startup(IConfiguration configuration) {
-            Configuration = configuration;
+        public Startup(IHostingEnvironment env) {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(Environment.GetCommandLineArgs());
+
+            if (env.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -21,6 +35,13 @@ namespace FacebookCollector {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddHostedService<HostedService>();
+            services.AddTransient<Repository>();
+            services.AddTransient<SettingsProvider>();
+            services.AddTransient<ChannelCollector>();
+            services.AddTransient<CommentCollector>();
+            services.AddTransient<AnswerCollector>();
+            services.AddSingleton(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
