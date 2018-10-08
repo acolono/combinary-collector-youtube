@@ -8,11 +8,17 @@ using YoutubeCollector.Models;
 
 namespace YoutubeCollector.collectors {
     public abstract class CollectorBase : ICollector {
-        protected async Task<List<Video>> GetVideoFromId(string videoId, string apiKey, CancellationToken ct) {
+        protected async Task<List<Video>> GetVideoFromId(IEnumerable<string> videoIds, string apiKey, SyncCounter videoCountDown, CancellationToken ct) {
+            var videos = new List<Video>();
             using (var api = new YoutubeApi(apiKey)) {
-                var ytVid = await api.GetVideoDetails(videoId, ct);
-                return ytVid.Items.Select(v => v.MapToDbEntity()).ToList();
+                foreach (var videoId in videoIds) {
+                    var ytVid = await api.GetVideoDetails(videoId, ct);
+                    var dbVid = ytVid.Items.Select(v => v.MapToDbEntity());
+                    videoCountDown.Decrement();
+                    videos.AddRange(dbVid);
+                }
             }
+            return videos;
         }
 
         public abstract Task ExecuteAsync(CancellationToken stoppingToken);

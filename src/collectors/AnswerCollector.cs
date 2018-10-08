@@ -37,15 +37,14 @@ namespace YoutubeCollector.collectors {
             var parentsCountDown = new SyncCounter(allParents.Count);
             var tasks = parentIdParts.Select(parents => GetAnswersFromComments(parents, keys.Next(), answersCounter, updatesCounter, parentsCountDown)).ToList();
 
-            if (_logger.IsEnabled(LogLevel.Trace)) {
-                while (!_ct.IsCancellationRequested) {
-                    var runningTasks = tasks.Count(t => !t.IsCompleted);
-                    _logger.LogTrace($"answers received: {answersCounter.Read()}, parents left: {parentsCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
-                    if(runningTasks<=0) break;
-                    await Task.Delay(4000, _ct);
-                }
+            
+            while (!_ct.IsCancellationRequested) {
+                var runningTasks = tasks.Count(t => !t.IsCompleted);
+                _logger.LogTrace($"answers received: {answersCounter.Read()}, parents left: {parentsCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
+                if(runningTasks<=0) break;
+                await tasks.WaitOneOrTimeout(4000);
             }
-
+            
             foreach (var task in tasks) {
                 await task;
             }

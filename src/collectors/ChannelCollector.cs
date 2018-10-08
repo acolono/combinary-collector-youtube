@@ -40,13 +40,20 @@ namespace YoutubeCollector.collectors {
             videoIds.AddRange(oldVideoIds);
 
             var videoIdsPartitions = videoIds.Partition(_settingsProvider.Parallelism);
+            var videoCountDown = new SyncCounter(videoIds.Count);
+            var videoTasks = videoIdsPartitions.Select(part => GetVideoFromId(part, keys.Next(), videoCountDown, _ct)).ToList();
+
+            while (!_ct.IsCancellationRequested) {
+                var runningTasks = videoTasks.Count(t => !t.IsCompleted);
+                _logger.LogTrace($"videos left: {videoCountDown.Read()}, running tasks: {runningTasks}");
+
+                if(runningTasks<=0) break;
+                await videoTasks.WaitOneOrTimeout(4000);
+            }
+
             var videos = new List<Video>();
-            foreach (var videoIdsPartition in videoIdsPartitions) {
-                var videoTasks = videoIdsPartition.Select(id => GetVideoFromId(id, keys.Next(), _ct)).ToList();
-                foreach (var videoTask in videoTasks) {
-                    videos.AddRange(await videoTask);
-                    _logger.LogTrace($"video details optained: {videos.Count} / {videoIds.Count}");
-                }
+            foreach (var videoTask in videoTasks) {
+                videos.AddRange(await videoTask);
             }
 
             var updates = await _repository.SaveOrUpdate(videos);

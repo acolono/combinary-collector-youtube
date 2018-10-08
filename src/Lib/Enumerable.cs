@@ -38,5 +38,11 @@ namespace YoutubeCollector.Lib {
                 hashSet.Add(r);
             }
         }
+
+        public static async Task WaitOneOrTimeout(this IEnumerable<Task> tasks, int timeout) {
+            var delay = Task.Delay(timeout);
+            var running = tasks.Where(t => !t.IsCompleted).Append(delay);
+            await Task.WhenAny(running);
+        }
     }
 }

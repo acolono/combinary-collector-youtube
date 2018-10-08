@@ -40,7 +40,7 @@ namespace YoutubeCollector.collectors {
                 var runningTasks = tasks.Count(t => !t.IsCompleted);
                 _logger.LogTrace($"comments received: {commentsCounter.Read()}, videos left: {videoCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
                 if (runningTasks == 0) break;
-                await Task.Delay(4000, _ct);
+                await tasks.WaitOneOrTimeout(4000);
             }
 
             foreach (var task in tasks) {
