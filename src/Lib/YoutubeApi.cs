@@ -58,7 +58,7 @@ namespace YoutubeCollector.Lib {
 
         public async Task<PlaylistItemListResponse> GetAllVideosFromPlaylist(string playlistId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var request = _youtubeService.PlaylistItems.List("id");
+            var request = _youtubeService.PlaylistItems.List("id,contentDetails");
             request.PlaylistId = playlistId;
             return await request.ExecuteAllAsync(cancellationToken);
         }

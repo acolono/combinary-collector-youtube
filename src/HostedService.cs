@@ -20,15 +20,15 @@ namespace YoutubeCollector {
         private readonly ILogger<HostedService> _logger;
         private readonly Repository _repository;
         private readonly SettingsProvider _settingsProvider;
-        private readonly ChannelCollector _channelCollector;
+        private readonly VideoCollector _videoCollector;
         private readonly CommentCollector _commentCollector;
         private readonly AnswerCollector _answerCollector;
 
-        public HostedService(ILogger<HostedService> logger, Repository repository, SettingsProvider settingsProvider, ChannelCollector channelCollector, CommentCollector commentCollector, AnswerCollector answerCollector) {
+        public HostedService(ILogger<HostedService> logger, Repository repository, SettingsProvider settingsProvider, VideoCollector videoCollector, CommentCollector commentCollector, AnswerCollector answerCollector) {
             _logger = logger;
             _repository = repository;
             _settingsProvider = settingsProvider;
-            _channelCollector = channelCollector;
+            _videoCollector = videoCollector;
             _commentCollector = commentCollector;
             _answerCollector = answerCollector;
         }
@@ -38,7 +38,7 @@ namespace YoutubeCollector {
             var quotaExceeded = false;
             while (!stoppingToken.IsCancellationRequested) {
                 try {
-                    if (_settingsProvider.CollectVideos) await _channelCollector.ExecuteAsync(stoppingToken);
+                    if (_settingsProvider.CollectVideos) await _videoCollector.ExecuteAsync(stoppingToken);
                     if (_settingsProvider.CollectComments) await _commentCollector.ExecuteAsync(stoppingToken);
                     if (_settingsProvider.CollectAnswers) await _answerCollector.ExecuteAsync(stoppingToken);
                 }

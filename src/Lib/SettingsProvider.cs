@@ -22,8 +22,9 @@ namespace YoutubeCollector.Lib {
         public bool CollectVideos => ParseBool(Get("COLLECT_VIDEOS")) ?? true;
         public bool CollectComments => ParseBool(Get("COLLECT_COMMENTS")) ?? true;
         public bool CollectAnswers => ParseBool(Get("COLLECT_ANSWERS")) ?? true;
-        public IList<string> ChannelIds => GetChannelIds();
-        public ApiKeys ApiKeys => GetApiKeys();
+        public IList<string> ChannelIds => GetIds("CHANNEL_ID", "CHANNEL_IDS");
+        public IList<string> ListIds => GetIds("LIST_ID","LIST_IDS");
+        public ApiKeys ApiKeys => GetIds("API_KEY", "API_KEYS").ToRotatableReadOnlyCollection();
         public int Parallelism => GetParallelism();
         public int IdleMinutes => ParseInt(Get("IDLE_MINUTES")) ?? 60;
 
@@ -32,22 +33,14 @@ namespace YoutubeCollector.Lib {
             return ParseInt(Get("PARALLELISM")) ?? Environment.ProcessorCount;
         }
 
-        private ApiKeys GetApiKeys() {
-            var r = new List<string>();
-            var apiKeys = Get("API_KEYS") ?? Get("API_KEYS");
-            if (apiKeys != null) {
-                r.AddRange(apiKeys.Split(',',';'));
+        private IList<string> GetIds(string singular, string plural) {
+            var list = new List<string>();
+            var ids = Get(singular) ?? Get(plural);
+            if (ids != null) {
+                var foundIds = ids.Split(',', ';').Select(i => i.Trim()).Where(i => !string.IsNullOrWhiteSpace(i));
+                list.AddRange(foundIds);
             }
-            return r.ToRotatableReadOnlyCollection();
-        }
-
-        private IList<string> GetChannelIds() {
-            var r = new List<string>();
-            var cids = Get("CHANNEL_ID") ?? Get("CHANNEL_IDS");
-            if (cids != null) {
-                r.AddRange(cids.Split(',', ';'));
-            }
-            return r;
+            return list;
 
         }
 

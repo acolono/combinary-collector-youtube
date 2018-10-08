@@ -38,7 +38,7 @@ namespace YoutubeCollector {
             services.AddHostedService<HostedService>();
             services.AddTransient<Repository>();
             services.AddTransient<SettingsProvider>();
-            services.AddTransient<ChannelCollector>();
+            services.AddTransient<VideoCollector>();
             services.AddTransient<CommentCollector>();
             services.AddTransient<AnswerCollector>();
             services.AddSingleton(Configuration);

@@ -21,9 +21,9 @@ namespace YoutubeCollector.Db {
 
         private StorageContext GetContext() => new StorageContext(settingsProvider: _settingsProvider);
 
-        public HashSet<string> GetAllVideoIds() {
+        public async Task<IList<string>> GetAllVideoIdsAsync() {
             using (var db = GetContext()) {
-                return db.Videos.Select(o => o.Id).ToHashSet();
+                return await db.Videos.Select(o => o.Id).Distinct().ToListAsync();
             }
         }
 

@@ -9,13 +9,13 @@ using YoutubeCollector.Lib;
 using YoutubeCollector.Models;
 
 namespace YoutubeCollector.collectors {
-    public class CommentCollector : CollectorBase {
+    public class CommentCollector : ICollector {
         private readonly Repository _repository;
         private readonly SettingsProvider _settingsProvider;
         private readonly ILogger<CommentCollector> _logger;
         private CancellationToken _ct;
 
-        public override async Task ExecuteAsync(CancellationToken stoppingToken) {
+        public async Task ExecuteAsync(CancellationToken stoppingToken) {
             _ct = stoppingToken;
             await CollectComments();
         }

@@ -9,14 +9,14 @@ using YoutubeCollector.Lib;
 using YoutubeCollector.Models;
 
 namespace YoutubeCollector.collectors {
-    public class AnswerCollector : CollectorBase {
+    public class AnswerCollector : ICollector {
 
         private readonly Repository _repository;
         private readonly SettingsProvider _settingsProvider;
         private readonly ILogger<AnswerCollector> _logger;
         private CancellationToken _ct;
 
-        public override async Task ExecuteAsync(CancellationToken stoppingToken) {
+        public async Task ExecuteAsync(CancellationToken stoppingToken) {
             _ct = stoppingToken;
             await CollectAnswers();
         }
