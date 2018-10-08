@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using YoutubeCollector.collectors;
 using YoutubeCollector.Db;
 using YoutubeCollector.Lib;
@@ -34,7 +35,12 @@ namespace YoutubeCollector {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddJsonOptions(o => {
+                    o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    o.SerializerSettings.Formatting = Formatting.Indented;
+                });
             services.AddHostedService<HostedService>();
             services.AddTransient<Repository>();
             services.AddTransient<SettingsProvider>();
