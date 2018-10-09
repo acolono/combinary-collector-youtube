@@ -59,19 +59,19 @@ namespace YoutubeCollector {
 
         private async Task Idle(CancellationToken ct, bool quotaExceeded) {
             try {
-                var idleMinutes = _settingsProvider.IdleMinutes;
+                var idleSeconds = _settingsProvider.IdleMinutes * 60;
                 if (quotaExceeded) {
                     //TODO: Calculate time until quota reset - probably end of the day, but wich timezone?
                     var now = DateTime.UtcNow; // TODO: apply offset 
                     var endOfDay = now.Date.AddHours(24);
                     var diff = endOfDay - now;
-                    idleMinutes = ((int) diff.TotalMinutes) + 1;
+                    idleSeconds = ((int) diff.TotalSeconds) + 1;
                 }
-                var idleUntil = DateTime.Now.AddMinutes(idleMinutes);
-                while (idleMinutes > 0) {
-                    _logger.LogDebug($"Idle... {idleMinutes} minutes left until {idleUntil}");
-                    await Task.Delay(TimeSpan.FromMinutes(1), ct);
-                    idleMinutes--;
+                var idleUntil = DateTime.Now.AddSeconds(idleSeconds);
+                while (idleSeconds > 0) {
+                    _logger.LogDebug($"Idle... {idleSeconds/60} minutes left until {idleUntil}");
+                    await Task.Delay(1000, ct);
+                    idleSeconds--;
                 }
                    
             }

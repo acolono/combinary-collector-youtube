@@ -34,6 +34,7 @@ namespace YoutubeCollector.Db {
 
                 if (_logSql ?? cfg.LogSql) {
                     optionsBuilder.UseLoggerFactory(new ConsoleLoggerFactory());
+                    optionsBuilder.EnableSensitiveDataLogging();
                 }
             }
         }
