@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace YoutubeCollector.Models {
 
@@ -20,6 +22,8 @@ namespace YoutubeCollector.Models {
 
         public CommentType CommentType { get; set; }
         public Video Video { get; set; }    
+        public IList<Comment> Children { get; set; }
+        public Comment Parent { get; set; }
     }
 
     public enum CommentType {

@@ -50,6 +50,9 @@ namespace YoutubeCollector.Db {
             var comment = builder.Entity<Comment>();
             comment.HasKey(k => k.Id);
             comment.HasIndex(k => k.CommentType);
+            comment.HasOne(d => d.Parent)
+                .WithMany(p => p.Children)
+                .HasForeignKey(d => d.ParentId);
         }
     }
 
