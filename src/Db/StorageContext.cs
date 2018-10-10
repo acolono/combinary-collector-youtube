@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using YoutubeCollector.Models;
@@ -29,7 +30,11 @@ namespace YoutubeCollector.Db {
                 var cfg = new SettingsProvider(null);
                 var cb = new NpgsqlConnectionStringBuilder(cfg.PgConnectionString);
                 var pgHost = cfg.PgHost;
-                if(pgHost != null) cb.Host = pgHost;
+                if (pgHost != null) {
+                    var ips = Dns.GetHostAddresses(pgHost);
+                    if (ips.Any()) pgHost = ips.First().ToString();
+                    cb.Host = pgHost;
+                }
                 optionsBuilder.UseNpgsql(cb.ConnectionString);
                 LogSql = LogSql ?? cfg.LogSql;
                 if (LogSql ?? cfg.LogSql) {
