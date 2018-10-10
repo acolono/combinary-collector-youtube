@@ -13,12 +13,14 @@ using YoutubeCollector.Lib;
 
 namespace YoutubeCollector.Db {
     public class StorageContext : DbContext {
+        private readonly ILogger<StorageContext> _logger;
         public bool? LogSql { get; private set; }
         private readonly SettingsProvider _settingsProvider = new SettingsProvider(null);
 
         public StorageContext() {}
 
-        public StorageContext(bool? logSql = null, SettingsProvider settingsProvider = null) {
+        public StorageContext(bool? logSql = null, SettingsProvider settingsProvider = null, ILogger<StorageContext> logger = null) {
+            _logger = logger;
             if (logSql != null) LogSql = logSql;
             if (settingsProvider != null) _settingsProvider = settingsProvider;
         }
@@ -27,20 +29,22 @@ namespace YoutubeCollector.Db {
             if (!optionsBuilder.IsConfigured) {
                 // devenv$ docker run -d --name pg -p 5432:5432 --restart always postgres:alpine
 
-                var cfg = new SettingsProvider(null);
+                var cfg = _settingsProvider;
+                LogSql = LogSql ?? cfg.LogSql;
+
                 var cb = new NpgsqlConnectionStringBuilder(cfg.PgConnectionString);
                 var pgHost = cfg.PgHost;
                 if (pgHost != null) {
                     var ips = Dns.GetHostAddresses(pgHost);
-                    Console.WriteLine($"Resolving: {pgHost} -> {string.Join(", ", ips.Select(i=>i.ToString()))}");
+                    _logger?.LogTrace($"Resolving: {pgHost} -> {string.Join(", ", ips.Select(i => i.ToString()))}");
                     if (ips.Any()) pgHost = ips.First().ToString();
                     cb.Host = pgHost;
                 }
                 optionsBuilder.UseNpgsql(cb.ConnectionString);
-                LogSql = LogSql ?? cfg.LogSql;
                 if (LogSql ?? cfg.LogSql) {
                     optionsBuilder.UseLoggerFactory(new ConsoleLoggerFactory());
                     optionsBuilder.EnableSensitiveDataLogging();
+                    _logger?.LogTrace($"connectionString: {cb.ConnectionString}");
                 }
             }
         }

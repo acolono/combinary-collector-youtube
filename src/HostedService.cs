@@ -29,7 +29,12 @@ namespace YoutubeCollector {
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-            await _repository.MigrateAsync();
+            try {
+                await _repository.MigrateAsync();
+            }
+            catch (Exception e) {
+                _logger.LogCritical(e, "Migration Failed");
+            }
             var quotaExceeded = false;
 
             while (!stoppingToken.IsCancellationRequested) {

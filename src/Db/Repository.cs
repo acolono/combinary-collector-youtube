@@ -13,13 +13,15 @@ namespace YoutubeCollector.Db {
     public class Repository {
         private readonly ILogger<Repository> _logger;
         private readonly SettingsProvider _settingsProvider;
+        private readonly ILogger<StorageContext> _storageContextLogger;
 
-        public Repository(ILogger<Repository> logger, SettingsProvider settingsProvider) {
+        public Repository(ILogger<Repository> logger, SettingsProvider settingsProvider, ILogger<StorageContext> storageContextLogger) {
             _logger = logger;
             _settingsProvider = settingsProvider;
+            _storageContextLogger = storageContextLogger;
         }
 
-        private StorageContext GetContext(bool? logSql = null) => new StorageContext(settingsProvider: _settingsProvider, logSql: logSql);
+        private StorageContext GetContext(bool? logSql = null) => new StorageContext(logSql, _settingsProvider, _storageContextLogger);
 
         public async Task<IList<string>> GetAllVideoIdsAsync() {
             using (var db = GetContext()) {
