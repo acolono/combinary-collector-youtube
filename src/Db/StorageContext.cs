@@ -32,6 +32,7 @@ namespace YoutubeCollector.Db {
                 var pgHost = cfg.PgHost;
                 if (pgHost != null) {
                     var ips = Dns.GetHostAddresses(pgHost);
+                    Console.WriteLine($"Resolving: {pgHost} -> {string.Join(", ", ips.Select(i=>i.ToString()))}");
                     if (ips.Any()) pgHost = ips.First().ToString();
                     cb.Host = pgHost;
                 }
