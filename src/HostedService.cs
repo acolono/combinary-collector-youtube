@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Google;
 using YoutubeCollector.Db;
-using YoutubeCollector.Models;
-using Google.Apis.Logging;
-using Google.Apis.YouTube.v3.Data;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using YoutubeCollector.collectors;
 using YoutubeCollector.Lib;
-using Video = YoutubeCollector.Models.Video;
 
 namespace YoutubeCollector {
     public class HostedService : BackgroundService {
@@ -34,8 +29,9 @@ namespace YoutubeCollector {
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-            await _repository.Migrate();
+            await _repository.MigrateAsync();
             var quotaExceeded = false;
+
             while (!stoppingToken.IsCancellationRequested) {
                 try {
                     if (_settingsProvider.CollectVideos) await _videoCollector.ExecuteAsync(stoppingToken);
@@ -59,21 +55,20 @@ namespace YoutubeCollector {
 
         private async Task Idle(CancellationToken ct, bool quotaExceeded) {
             try {
-                var idleSeconds = _settingsProvider.IdleMinutes * 60;
+                var idleMinutes = _settingsProvider.IdleMinutes;
                 if (quotaExceeded) {
                     //TODO: Calculate time until quota reset - probably end of the day, but wich timezone?
                     var now = DateTime.UtcNow; // TODO: apply offset 
                     var endOfDay = now.Date.AddHours(24);
                     var diff = endOfDay - now;
-                    idleSeconds = ((int) diff.TotalSeconds) + 1;
+                    idleMinutes = (int) diff.TotalMinutes + 1;
                 }
-                var idleUntil = DateTime.Now.AddSeconds(idleSeconds);
-                while (idleSeconds > 0) {
-                    _logger.LogDebug($"Idle... {idleSeconds/60} minutes left until {idleUntil}");
-                    await Task.Delay(1000, ct);
-                    idleSeconds--;
+                var idleUntil = DateTime.Now.AddSeconds(idleMinutes);
+                while (idleMinutes > 0) {
+                    _logger.LogDebug($"Idle... {idleMinutes} minutes left until {idleUntil}");
+                    await Task.Delay(1000 * 60, ct);
+                    idleMinutes = (int)(idleUntil - DateTime.Now).TotalMinutes;
                 }
-                   
             }
             catch (TaskCanceledException) {
                 /* goning down */

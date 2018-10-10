@@ -19,7 +19,7 @@ namespace YoutubeCollector.Db {
             _settingsProvider = settingsProvider;
         }
 
-        private StorageContext GetContext() => new StorageContext(settingsProvider: _settingsProvider);
+        private StorageContext GetContext(bool? logSql = null) => new StorageContext(settingsProvider: _settingsProvider, logSql: logSql);
 
         public async Task<IList<string>> GetAllVideoIdsAsync() {
             using (var db = GetContext()) {
@@ -27,9 +27,13 @@ namespace YoutubeCollector.Db {
             }
         }
 
-        public IList<CommentBase> GetCommentIdsByType(CommentType commentType) {
+        public async Task<IList<CommentBase>> GetCommentsWithAnswersAsync() {
             using (var db = GetContext()) {
-                return db.Comments.Where(c => c.CommentType == commentType).Select(c => new CommentBase {Id = c.Id, VideoId = c.VideoId}).ToList();
+                var queryTask = db.Comments
+                    .Where(c => c.CommentType == CommentType.Comment && c.HasAnswers)
+                    .Select(c=> new CommentBase{Id = c.Id, VideoId = c.VideoId})
+                    .ToListAsync();
+                return await queryTask;
             }
         }
 
@@ -83,8 +87,8 @@ namespace YoutubeCollector.Db {
             }
         }
 
-        public async Task Migrate(bool logSql=false) {
-            using (var db = new StorageContext(logSql)) {
+        public async Task MigrateAsync() {
+            using (var db = GetContext()) {
                 // take a minute to get the database up and migrated
                 var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
                 Exception lastException = null;
@@ -97,6 +101,9 @@ namespace YoutubeCollector.Db {
                     catch (Exception e) {
                         lastException = e;
                         _logger.LogWarning($"Migration Problem: {e.Message}");
+                        if (db.LogSql == true) {
+                            _logger.LogTrace($"PgConnectionString: {_settingsProvider.PgConnectionString}");
+                        }
                     }
 
                     await Task.Delay(1000, cts.Token);

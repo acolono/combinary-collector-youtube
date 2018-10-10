@@ -37,7 +37,7 @@ namespace YoutubeCollector.Lib {
             };
         }
 
-        public static Models.Comment MapToDbEntity(this Comment c, Models.CommentType commentType, string videoId = null) {
+        public static Models.Comment MapToDbEntity(this Comment c, Models.CommentType commentType, string videoId = null, bool hasAnswers = false) {
             var m = new Models.Comment {
                 VideoId = c?.Snippet?.VideoId,
                 Id = c?.Id,
@@ -51,8 +51,10 @@ namespace YoutubeCollector.Lib {
                 PublishedAt = c?.Snippet?.PublishedAt,
                 UpdatedAt = c?.Snippet?.UpdatedAt,
                 CommentType = commentType,
+                HasAnswers = hasAnswers,
             };
             if (videoId != null) m.VideoId = videoId;
+
             return m;
         }
 

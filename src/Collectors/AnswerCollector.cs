@@ -30,13 +30,12 @@ namespace YoutubeCollector.collectors {
         private async Task CollectAnswers() {
             var keys = _settingsProvider.ApiKeys;
             var par = _settingsProvider.Parallelism;
-            var allParents = _repository.GetCommentIdsByType(CommentType.Comment);
+            var allParents = await _repository.GetCommentsWithAnswersAsync();
             var parentIdParts = allParents.Partition(par);
             var answersCounter = new SyncCounter();
             var updatesCounter = new SyncCounter();
             var parentsCountDown = new SyncCounter(allParents.Count);
             var tasks = parentIdParts.Select(parents => GetAnswersFromComments(parents, keys.Next(), answersCounter, updatesCounter, parentsCountDown)).ToList();
-
             
             while (!_ct.IsCancellationRequested) {
                 var runningTasks = tasks.Count(t => !t.IsCompleted);

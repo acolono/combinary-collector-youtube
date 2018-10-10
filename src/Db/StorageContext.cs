@@ -12,13 +12,13 @@ using YoutubeCollector.Lib;
 
 namespace YoutubeCollector.Db {
     public class StorageContext : DbContext {
-        private readonly bool? _logSql = null;
+        public bool? LogSql { get; private set; }
         private readonly SettingsProvider _settingsProvider = new SettingsProvider(null);
 
         public StorageContext() {}
 
         public StorageContext(bool? logSql = null, SettingsProvider settingsProvider = null) {
-            if (logSql != null) _logSql = logSql;
+            if (logSql != null) LogSql = logSql;
             if (settingsProvider != null) _settingsProvider = settingsProvider;
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
@@ -31,8 +31,8 @@ namespace YoutubeCollector.Db {
                 var pgHost = cfg.PgHost;
                 if(pgHost != null) cb.Host = pgHost;
                 optionsBuilder.UseNpgsql(cb.ConnectionString);
-
-                if (_logSql ?? cfg.LogSql) {
+                LogSql = LogSql ?? cfg.LogSql;
+                if (LogSql ?? cfg.LogSql) {
                     optionsBuilder.UseLoggerFactory(new ConsoleLoggerFactory());
                     optionsBuilder.EnableSensitiveDataLogging();
                 }
@@ -51,6 +51,7 @@ namespace YoutubeCollector.Db {
             var comment = builder.Entity<Comment>();
             comment.HasKey(k => k.Id);
             comment.HasIndex(k => k.CommentType);
+            comment.HasIndex(k => k.HasAnswers);
             comment.HasOne(d => d.Parent)
                 .WithMany(p => p.Children)
                 .HasForeignKey(d => d.ParentId);

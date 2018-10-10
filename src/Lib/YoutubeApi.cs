@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Apis.Http;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
@@ -66,6 +67,13 @@ namespace YoutubeCollector.Lib {
         public async Task<CommentThreadListResponse> GetAllCommentsFromVideo(string videoId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var request = _youtubeService.CommentThreads.List("snippet");
+            request.VideoId = videoId;
+            return await request.ExecuteAllAsync(cancellationToken);
+        }
+
+        public async Task<CommentThreadListResponse> GetAllCommentsAndAnswersFromVideo(string videoId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var request = _youtubeService.CommentThreads.List("snippet,replies");
             request.VideoId = videoId;
             return await request.ExecuteAllAsync(cancellationToken);
         }

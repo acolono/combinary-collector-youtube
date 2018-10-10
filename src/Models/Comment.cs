@@ -19,7 +19,7 @@ namespace YoutubeCollector.Models {
         public string ModerationStatus { get; set; }
         public DateTime? PublishedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-
+        public bool HasAnswers { get; set; }
         public CommentType CommentType { get; set; }
         public Video Video { get; set; }    
         public IList<Comment> Children { get; set; }
@@ -28,12 +28,12 @@ namespace YoutubeCollector.Models {
 
     public enum CommentType {
         /// <summary>
-        /// First level comment on Video
+        /// Top level - comment on Video
         /// </summary>
         Comment,
 
         /// <summary>
-        /// Second level comment on comment (aka answer)
+        /// Second level - comment on comment (aka answer or reply)
         /// </summary>
         Answer,
     }
