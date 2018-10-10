@@ -103,6 +103,7 @@ namespace YoutubeCollector.Db {
                         _logger.LogWarning($"Migration Problem: {e.Message}");
                         if (db.LogSql == true) {
                             _logger.LogTrace($"PgConnectionString: {_settingsProvider.PgConnectionString}");
+                            _logger.LogError(e, "Migration Error");
                         }
                     }
 
@@ -110,6 +111,7 @@ namespace YoutubeCollector.Db {
                 }
 
                 if (lastException != null || cts.Token.IsCancellationRequested) {
+                    _logger.LogError(lastException, "Migration Failed");
                     throw new Exception("Migration Failed", lastException);
                 }
             }
