@@ -15,7 +15,7 @@ namespace YoutubeCollector.Db {
     public class StorageContext : DbContext {
         private readonly ILogger<StorageContext> _logger;
         public bool? LogSql { get; private set; }
-        private readonly SettingsProvider _settingsProvider = new SettingsProvider(null);
+        private readonly SettingsProvider _settingsProvider = new SettingsProvider(null, null);
 
         public StorageContext() {}
 
