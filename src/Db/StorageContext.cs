@@ -36,15 +36,20 @@ namespace YoutubeCollector.Db {
                 var pgHost = cfg.PgHost;
                 if (pgHost != null) {
                     var ips = Dns.GetHostAddresses(pgHost);
-                    _logger?.LogTrace($"Resolving: {pgHost} -> {string.Join(", ", ips.Select(i => i.ToString()))}");
+#if DEBUG_DOCKER
+                    _logger?.LogCritical($"Resolving: {pgHost} -> {string.Join(", ", ips.Select(i => i.ToString()))}");
+#endif
                     if (ips.Any()) pgHost = ips.First().ToString();
                     cb.Host = pgHost;
                 }
-                optionsBuilder.UseNpgsql(cb.ConnectionString);
+                var connStr = cb.ToString();
+                optionsBuilder.UseNpgsql(connStr);
                 if (LogSql ?? cfg.LogSql) {
                     optionsBuilder.UseLoggerFactory(new ConsoleLoggerFactory());
                     optionsBuilder.EnableSensitiveDataLogging();
-                    _logger?.LogTrace($"connectionString: {cb.ConnectionString}");
+#if DEBUG_DOCKER
+                    _logger?.LogCritical($"connectionString: {connStr}");
+#endif
                 }
             }
         }

@@ -68,8 +68,10 @@ namespace YoutubeCollector.Lib {
             var envVar = GetEnvVar(key);
             var config = GetConfig(key);
             var docker = GetDockerSecret(key);
-            _logger?.LogCritical($"Get('{key}') = '{envVar ?? "<null>"}' ?? '{config ?? "<null>"}' ?? '{docker ?? "<null>"}' ?? '{defaultValue ?? "<null>"}'");
-            return envVar ?? config ?? docker ?? defaultValue;
+            var rval = envVar ?? config ?? docker ?? defaultValue;
+            _logger?.LogCritical($"'{rval}' = Get('{key}') => env:'{envVar ?? "<null>"}' ?? cfg:'{config ?? "<null>"}' ?? docker:'{docker ?? "<null>"}' ?? def:'{defaultValue ?? "<null>"}'");
+            
+            return rval;
 #else
             return GetEnvVar(key) ?? GetConfig(key) ?? GetDockerSecret(key) ?? defaultValue;
 #endif
