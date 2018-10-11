@@ -6,14 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ApiKeys = YoutubeCollector.Lib.RotatableReadOnlyCollection<string>;
 
 namespace YoutubeCollector.Lib {
     public class SettingsProvider {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<SettingsProvider> _logger;
 
-        public SettingsProvider(IConfiguration configuration) {
+        public SettingsProvider(IConfiguration configuration, ILogger<SettingsProvider> logger) {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public string PgConnectionString => Get("PG_CONNECTION_STRING", "Host=localhost;Database=postgres;Username=postgres");
@@ -61,7 +64,15 @@ namespace YoutubeCollector.Lib {
         }
 
         private string Get(string key, string defaultValue = null) {
+#if DEBUG_DOCKER
+            var envVar = GetEnvVar(key);
+            var config = GetConfig(key);
+            var docker = GetDockerSecret(key);
+            _logger.LogCritical($"Get('{key}') = '{envVar ?? "<null>"}' ?? '{config ?? "<null>"}' ?? '{docker ?? "<null>"}' ?? '{defaultValue ?? "<null>"}'");
+            return envVar ?? config ?? docker ?? defaultValue;
+#else
             return GetEnvVar(key) ?? GetConfig(key) ?? GetDockerSecret(key) ?? defaultValue;
+#endif
         }
 
         private string GetConfig(string key) {

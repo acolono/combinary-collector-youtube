@@ -24,12 +24,13 @@ namespace YoutubeCollector.Controllers {
         // GET api/values
         [HttpGet("/")]
         public ActionResult<string> Get() {
-
+#if DEBUG_DOCKER
             var c = string.Join(Environment.NewLine, _configuration.AsEnumerable().Select(kp => $"{kp.Key}={kp.Value}"));
-            c += Environment.NewLine + "PgConnectionString" + _settingsProvider.PgConnectionString;
-            c += Environment.NewLine + "PgHost" + _settingsProvider.PgHost;
+            c += Environment.NewLine + "PgConnectionString: " + _settingsProvider.PgConnectionString;
+            c += Environment.NewLine + "PgHost: " + _settingsProvider.PgHost;
+            c += Environment.NewLine + "LogSql: " + _settingsProvider.LogSql;
             _logger.LogCritical(c);
-
+#endif
             var uh = new UrlHelper(ControllerContext);
             var link = uh.Action(nameof(GetVideoDetails), new {videoId="VIDEO_ID"});
             return $"try {link}";

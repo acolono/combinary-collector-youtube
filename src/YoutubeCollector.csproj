@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>937bfc18-4505-462c-a643-f3416882a6c4</UserSecretsId>
+    <DefineConstants>$(DefineConstants);DEBUG_DOCKER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
