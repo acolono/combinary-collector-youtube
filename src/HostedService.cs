@@ -43,8 +43,12 @@ namespace YoutubeCollector {
                     if (_settingsProvider.CollectComments) await _commentCollector.ExecuteAsync(stoppingToken);
                     if (_settingsProvider.CollectAnswers) await _answerCollector.ExecuteAsync(stoppingToken);
                 }
-                catch (TaskCanceledException) {
-                    /* goning down */
+                catch (TaskCanceledException ex) {
+                    if (ex.CancellationToken == stoppingToken && stoppingToken.IsCancellationRequested) {
+                        /* goning down */
+                        break;
+                    }
+                    _logger.LogError(ex, ex.Task.GetType().FullName);
                 }
                 catch (GoogleApiException ex) {
                     quotaExceeded = ex.Error.Errors.Any(e => e.Reason.Contains("Exceeded"));

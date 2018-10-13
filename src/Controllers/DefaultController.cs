@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -15,42 +16,28 @@ using YoutubeCollector.Lib;
 namespace YoutubeCollector.Controllers {
     [Route("/")]
     [ApiController]
-    public class DefaultController : ControllerBase {
+    public class DefaultController : Controller {
         private readonly SettingsProvider _settingsProvider;
         private readonly Repository _repository;
-        private readonly ILogger<DefaultController> _logger;
-        private readonly IConfiguration _configuration;
 
-        // GET api/values
-        [HttpGet("/")]
-        public ActionResult<string> Get() {
-#if DEBUG_DOCKER
-            var c = string.Join(Environment.NewLine, _configuration.AsEnumerable().Select(kp => $"{kp.Key}={kp.Value}"));
-            c += Environment.NewLine + "PgConnectionString: " + _settingsProvider.PgConnectionString;
-            c += Environment.NewLine + "PgHost: " + _settingsProvider.PgHost;
-            c += Environment.NewLine + "LogSql: " + _settingsProvider.LogSql;
-            _logger.LogCritical(c);
-#endif
-            var uh = new UrlHelper(ControllerContext);
-            var link = uh.Action(nameof(GetVideoDetails), new {videoId="VIDEO_ID"});
-            return $"try {link}";
-        }
+        //TODO: swagger
+        //[HttpGet("/"), ApiExplorerSettings(IgnoreApi = true)]
+        //public IActionResult Index() => Redirect("~/swagger");
 
-        public DefaultController(SettingsProvider settingsProvider, Repository repository, ILogger<DefaultController> logger, IConfiguration configuration) {
+        public DefaultController(SettingsProvider settingsProvider, Repository repository) {
             _settingsProvider = settingsProvider;
             _repository = repository;
-            _logger = logger;
-            _configuration = configuration;
         }
 
         [HttpGet("/api/get-video-details/{videoId}"), Produces("application/json")]
         [ProducesResponseType(typeof(IEnumerable<Models.Video>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetVideoDetails([Required] string videoId, CancellationToken ct = default(CancellationToken)) {
+        public async Task<IActionResult> GetVideoDetails([Required] string videoIdOrUrl, CancellationToken ct = default(CancellationToken)) {
             try {
                 using (var api = new YoutubeApi(_settingsProvider.ApiKeys.Next())) {
-                    var vid = await api.GetVideoDetails(videoId, ct);
+                    var vidId = new VideoUrlParser().GetVideoId(videoIdOrUrl);
+                    var vid = await api.GetVideoDetails(vidId, ct);
                     var vids = vid.Items.Select(v => v.MapToDbEntity()).ToList();
                     if (!vids.Any()) {
                         return NotFound(new ProblemDetails {

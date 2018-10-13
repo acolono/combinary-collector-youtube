@@ -27,8 +27,8 @@ namespace YoutubeCollector.collectors {
 
         private async Task CollectVideoDetails() {
             var keys = _settingsProvider.ApiKeys;
-            var channelIds = _settingsProvider.ChannelIds;
-            var listIds = _settingsProvider.ListIds;
+            var channelIds = _settingsProvider.ChannelIds ?? new List<string>();
+            var listIds = _settingsProvider.ListIds ?? new List<string>();
 
             var fromChannelsTask = GetVideoIdsFromChannels(channelIds, keys.Next());
             var fromListTask = GetVideoIdsFromList(listIds, keys.Next());
@@ -48,7 +48,7 @@ namespace YoutubeCollector.collectors {
                 _logger.LogTrace($"videos left: {videoCountDown.Read()}, running tasks: {runningTasks}");
 
                 if(runningTasks<=0) break;
-                await videoTasks.WaitOneOrTimeout(4000);
+                await videoTasks.WaitOneOrTimeout(4000, ct: _ct);
             }
 
             var videos = new List<Video>();

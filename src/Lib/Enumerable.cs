@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace YoutubeCollector.Lib {
@@ -39,8 +40,8 @@ namespace YoutubeCollector.Lib {
             }
         }
 
-        public static async Task WaitOneOrTimeout(this IEnumerable<Task> tasks, int timeout) {
-            var delay = Task.Delay(timeout);
+        public static async Task WaitOneOrTimeout(this IEnumerable<Task> tasks, int timeout, CancellationToken ct = default(CancellationToken)) {
+            var delay = Task.Delay(timeout, ct);
             var running = tasks.Where(t => !t.IsCompleted).Append(delay);
             await Task.WhenAny(running);
         }

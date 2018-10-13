@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +42,7 @@ namespace YoutubeCollector.collectors {
                 var runningTasks = tasks.Count(t => !t.IsCompleted);
                 _logger.LogTrace($"answers received: {answersCounter.Read()}, parents left: {parentsCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
                 if(runningTasks<=0) break;
-                await tasks.WaitOneOrTimeout(4000);
+                await tasks.WaitOneOrTimeout(4000, _ct);
             }
             
             foreach (var task in tasks) {
@@ -53,7 +54,7 @@ namespace YoutubeCollector.collectors {
         private async Task GetAnswersFromComments(IEnumerable<CommentBase> parents, string apiKey, SyncCounter answersCounter, SyncCounter updatesCounter, SyncCounter parentsCountDown) {
             using (var api = new YoutubeApi(apiKey)) {
                 foreach (var parent in parents) {
-                    var ytComments = await api.GetAllAnswersFromComment(parent.Id, _ct);
+                    var ytComments = await api.GetAllAnswersFromComment(parent.Id, _ct).TryHarder(_logger, ct: _ct);
                     parentsCountDown.Decrement();
                     var dbAnswers = ytComments.Items.Select(i => i.MapToDbEntity(CommentType.Answer, parent.VideoId)).ToList();
                     answersCounter.Add(dbAnswers.Count);
