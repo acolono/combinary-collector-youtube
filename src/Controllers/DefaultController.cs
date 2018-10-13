@@ -29,7 +29,7 @@ namespace YoutubeCollector.Controllers {
             _repository = repository;
         }
 
-        [HttpGet("/api/get-video-details/{videoId}"), Produces("application/json")]
+        [HttpGet("/api/get-video-details/{videoIdOrUrl}"), Produces("application/json")]
         [ProducesResponseType(typeof(IEnumerable<Models.Video>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
