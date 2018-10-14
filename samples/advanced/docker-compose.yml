@@ -1,0 +1,82 @@
+version: "2.3"
+
+services:
+  collector:
+    image: quay.io/0xff/combinary-collector-youtube
+    environment:
+      ## A comma separated list of API keys to use (required)
+      API_KEYS: "${API_KEYS}"
+      ## Hostname of postgres instance (required)
+      PG_HOST: db
+      ## A comma separated list of Channel ID's
+      CHANNEL_IDS: "${CHANNEL_IDS:-}"
+      ## A comma separated list of Playlist ID's
+      LIST_IDS: "${LIST_IDS:-}"
+      ## Specify which collectors are active.
+      COLLECT_VIDEOS: "${COLLECT_VIDEOS:-true}" # video details and statistics
+      COLLECT_COMMENTS: "${COLLECT_COMMENTS:-true}" # comments and (some) answers
+      COLLECT_ANSWERS: "${COLLECT_ANSWERS:-true}" # all answers
+      COLLECT_URLS: "${COLLECT_URLS:-true}" # send urls to url-bucket
+      ## url-bucket api endpoint (required to collect urls)
+      URL_BUCKET_BASE_URL: "http://url-bucket/"
+      ## Delay between colletor runs.
+      IDLE_MINUTES: 60
+      ## Specify how many parallel task should be scheduled.
+      ## Defaults to: Number logical processors (except when a debugger is attached, then 1)
+      # PARALLELISM: 8
+      ## Specify the full postgres connection string
+      # PG_CONNECTION_STRING: "Host=localhost;Database=postgres;Username=postgres"
+      ## Log every sql statement (very verbose)
+      # LOG_SQL: "false"
+
+  logstash:
+    image: quay.io/0xff/combinary-collector-youtube-logstash
+    command: /bin/sh -c "dockerize -wait http://elasticsearch:9200/ && logstash -f /logstash.conf"
+    restart: on-failure
+    depends_on: 
+      - elasticsearch
+
+  kibana:
+      image: kibana:6.4.1
+      ports:
+        - "5601:5601"
+      depends_on: 
+        - elasticsearch      
+
+  elasticsearch:
+    image: elasticsearch:6.4.1
+
+  db:
+    image: postgres:10-alpine
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  url-bucket:
+    image: quay.io/0xff/url-bucket
+    scale: 3
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+      MINIO_ENDPOINT: minio:9000
+      MINIO_SSL: "false"
+
+  minio:
+    hostname: minio
+    image: minio/minio:RELEASE.2018-09-25T21-34-43Z
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data
+    volumes:
+      - miniodata:/data      
+
+volumes:
+  dbdata:
+  miniodata:

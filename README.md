@@ -22,17 +22,7 @@ services:
       - COLLECT_VIDEOS=true
       - COLLECT_COMMENTS=false
       - COLLECT_ANSWERS=false
-      # Delay between colletor runs.
-      - IDLE_MINUTES=60
-      # Specify how many parallel task should be scheduled.
-      # Defaults to: Number logical processors (except when a debugger is attached, then 1)
-      # - PARALLELISM=8
-      # Specify the full postgres connection string
-      # - PG_CONNECTION_STRING=Host=localhost;Database=postgres;Username=postgres
-      # Log every sql statement (very verbose)
-      # - LOG_SQL=false
       
-
   db:
     image: postgres:10-alpine
     expose:
@@ -44,6 +34,8 @@ volumes:
   dbdata:
 
 ```
+
+There is also an [advanced example](./samples/advanced)
 
 ## Webhooks
 
