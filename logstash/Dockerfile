@@ -12,4 +12,4 @@ RUN curl -fsSL "${POSTGRES_DRIVER}" -o /postgresql.driver.jar
 FROM logstash:alpine
 COPY --from=download /usr/local/bin/dockerize /usr/local/bin/
 COPY --from=download /postgresql.driver.jar /
-COPY logstash.conf /
+COPY *.conf /

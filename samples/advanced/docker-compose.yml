@@ -29,12 +29,26 @@ services:
       ## Log every sql statement (very verbose)
       # LOG_SQL: "false"
 
-  logstash:
+  logstash_comments:
     image: quay.io/0xff/combinary-collector-youtube-logstash
-    command: /bin/sh -c "dockerize -wait http://elasticsearch:9200/ && logstash -f /logstash.conf"
+    command: /bin/sh -c "dockerize -wait http://elasticsearch:9200/ && logstash -f /comments.conf"
     restart: on-failure
     depends_on: 
       - elasticsearch
+
+  logstash_videos:
+    image: quay.io/0xff/combinary-collector-youtube-logstash
+    command: /bin/sh -c "dockerize -wait http://elasticsearch:9200/ && logstash -f /videos.conf"
+    restart: on-failure
+    depends_on: 
+      - elasticsearch
+      
+  logstash_statistics:
+    image: quay.io/0xff/combinary-collector-youtube-logstash
+    command: /bin/sh -c "dockerize -wait http://elasticsearch:9200/ && logstash -f /statistics.conf"
+    restart: on-failure
+    depends_on: 
+      - elasticsearch      
 
   kibana:
       image: kibana:6.4.1
