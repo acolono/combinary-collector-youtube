@@ -9,7 +9,7 @@ using YoutubeCollector.Db;
 using YoutubeCollector.Lib;
 using YoutubeCollector.Models;
 
-namespace YoutubeCollector.collectors {
+namespace YoutubeCollector.Collectors {
     public class AnswerCollector : ICollector {
 
         private readonly Repository _repository;
@@ -40,7 +40,7 @@ namespace YoutubeCollector.collectors {
             
             while (!_ct.IsCancellationRequested) {
                 var runningTasks = tasks.Count(t => !t.IsCompleted);
-                _logger.LogTrace($"answers received: {answersCounter.Read()}, parents left: {parentsCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
+                _logger.LogInformation($"answers received: {answersCounter.Read()}, parents left: {parentsCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
                 if(runningTasks<=0) break;
                 await tasks.WaitOneOrTimeout(4000, _ct);
             }
@@ -48,7 +48,7 @@ namespace YoutubeCollector.collectors {
             foreach (var task in tasks) {
                 await task;
             }
-            _logger.LogDebug($"comments db updates: {updatesCounter.Read()}");
+            _logger.LogInformation($"comments db updates: {updatesCounter.Read()}");
         }
 
         private async Task GetAnswersFromComments(IEnumerable<CommentBase> parents, string apiKey, SyncCounter answersCounter, SyncCounter updatesCounter, SyncCounter parentsCountDown) {

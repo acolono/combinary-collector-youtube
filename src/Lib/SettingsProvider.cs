@@ -25,6 +25,8 @@ namespace YoutubeCollector.Lib {
         public bool CollectVideos => ParseBool(Get("COLLECT_VIDEOS")) ?? true;
         public bool CollectComments => ParseBool(Get("COLLECT_COMMENTS")) ?? true;
         public bool CollectAnswers => ParseBool(Get("COLLECT_ANSWERS")) ?? true;
+        public bool CollectUrls => ParseBool(Get("COLLECT_URLS")) ?? false;
+        public string UrlBucketBaseUrl => Get("URL_BUCKET_BASE_URL", "http://localhost:1234/");
         public IList<string> ChannelIds => GetIds("CHANNEL_ID", "CHANNEL_IDS");
         public IList<string> ListIds => GetIds("LIST_ID","LIST_IDS");
         public ApiKeys ApiKeys => GetIds("API_KEY", "API_KEYS").ToRotatableReadOnlyCollection();

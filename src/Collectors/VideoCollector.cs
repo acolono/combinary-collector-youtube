@@ -8,7 +8,7 @@ using YoutubeCollector.Db;
 using YoutubeCollector.Lib;
 using YoutubeCollector.Models;
 
-namespace YoutubeCollector.collectors {
+namespace YoutubeCollector.Collectors {
     public class VideoCollector : ICollector {
         private readonly SettingsProvider _settingsProvider;
         private readonly Repository _repository;
@@ -45,7 +45,7 @@ namespace YoutubeCollector.collectors {
 
             while (!_ct.IsCancellationRequested) {
                 var runningTasks = videoTasks.Count(t => !t.IsCompleted);
-                _logger.LogTrace($"videos left: {videoCountDown.Read()}, running tasks: {runningTasks}");
+                _logger.LogInformation($"videos left: {videoCountDown.Read()}, running tasks: {runningTasks}");
 
                 if(runningTasks<=0) break;
                 await videoTasks.WaitOneOrTimeout(4000, ct: _ct);
@@ -57,7 +57,7 @@ namespace YoutubeCollector.collectors {
             }
 
             var updates = await _repository.SaveOrUpdate(videos);
-            _logger.LogDebug($"video db updates: {updates}");
+            _logger.LogInformation($"video db updates: {updates}");
         }
 
 

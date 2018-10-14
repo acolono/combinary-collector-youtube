@@ -118,5 +118,29 @@ namespace YoutubeCollector.Db {
                 }
             }
         }
+
+        public async Task GetAllAuthorProfileImageUrlsAsync(Func<string,Task> urlAction) {
+            using (var db = GetContext()) {
+                foreach (var url in db.Comments.Select(c => c.AuthorProfileImageUrl)) {
+                    await urlAction(url);
+                }
+            }
+        }
+
+        public async Task GetAllVideoThumbnailsAsync(Func<string,Task> urlAction) {
+            using (var db = GetContext()) {
+                foreach (var url in db.Videos.Select(v => v.Thumbnail)) {
+                    await urlAction(url);
+                }
+            }
+        }
+
+        public async Task GetAllVideoMaxResImageUrlsAsync(Func<string,Task> urlAction) {
+            using (var db = GetContext()) {
+                foreach (var url in db.Videos.Select(v => v.MaxResImage)) {
+                    await urlAction(url);
+                }
+            }
+        }
     }
 }

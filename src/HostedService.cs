@@ -7,7 +7,7 @@ using Google;
 using YoutubeCollector.Db;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using YoutubeCollector.collectors;
+using YoutubeCollector.Collectors;
 using YoutubeCollector.Lib;
 
 namespace YoutubeCollector {
@@ -18,14 +18,16 @@ namespace YoutubeCollector {
         private readonly VideoCollector _videoCollector;
         private readonly CommentCollector _commentCollector;
         private readonly AnswerCollector _answerCollector;
+        private readonly UrlCollector _urlCollector;
 
-        public HostedService(ILogger<HostedService> logger, Repository repository, SettingsProvider settingsProvider, VideoCollector videoCollector, CommentCollector commentCollector, AnswerCollector answerCollector) {
+        public HostedService(ILogger<HostedService> logger, Repository repository, SettingsProvider settingsProvider, VideoCollector videoCollector, CommentCollector commentCollector, AnswerCollector answerCollector, UrlCollector urlCollector) {
             _logger = logger;
             _repository = repository;
             _settingsProvider = settingsProvider;
             _videoCollector = videoCollector;
             _commentCollector = commentCollector;
             _answerCollector = answerCollector;
+            _urlCollector = urlCollector;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
@@ -42,6 +44,7 @@ namespace YoutubeCollector {
                     if (_settingsProvider.CollectVideos) await _videoCollector.ExecuteAsync(stoppingToken);
                     if (_settingsProvider.CollectComments) await _commentCollector.ExecuteAsync(stoppingToken);
                     if (_settingsProvider.CollectAnswers) await _answerCollector.ExecuteAsync(stoppingToken);
+                    if (_settingsProvider.CollectUrls) await _urlCollector.ExecuteAsync(stoppingToken);
                 }
                 catch (TaskCanceledException ex) {
                     if (ex.CancellationToken == stoppingToken && stoppingToken.IsCancellationRequested) {

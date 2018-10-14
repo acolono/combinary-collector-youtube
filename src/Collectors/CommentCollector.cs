@@ -10,7 +10,7 @@ using YoutubeCollector.Lib;
 using YoutubeCollector.Models;
 using Comment = YoutubeCollector.Models.Comment;
 
-namespace YoutubeCollector.collectors {
+namespace YoutubeCollector.Collectors {
     public class CommentCollector : ICollector {
         private readonly Repository _repository;
         private readonly SettingsProvider _settingsProvider;
@@ -40,16 +40,16 @@ namespace YoutubeCollector.collectors {
 
             while (!_ct.IsCancellationRequested) {
                 var runningTasks = tasks.Count(t => !t.IsCompleted);
-                _logger.LogTrace($"comments received: {commentsCounter.Read()}, videos left: {videoCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
+                _logger.LogInformation($"comments received: {commentsCounter.Read()}, videos left: {videoCountDown.Read()}, db updates: {updatesCounter.Read()}, running tasks: {runningTasks}");
                 if (runningTasks == 0) break;
-                await tasks.WaitOneOrTimeout(4000);
+                await tasks.WaitOneOrTimeout(4000, ct: _ct);
             }
 
             foreach (var task in tasks) {
                 await task;
             }
 
-            _logger.LogDebug($"comments db updates: {updatesCounter.Read()}");
+            _logger.LogInformation($"comments db updates: {updatesCounter.Read()}");
         }
 
         private async Task GetCommentsFromVideoIds(IEnumerable<string> videoIds, string apiKey, SyncCounter commentsCnt, SyncCounter updatesCnt, SyncCounter vidCntDown) {
