@@ -1,4 +1,5 @@
-[![Container](https://quay.io/repository/0xff/combinary-collector-youtube/status "Container")](https://quay.io/repository/0xff/combinary-collector-youtube)  
+[![Container](https://quay.io/repository/0xff/combinary-collector-youtube/status "Container")](https://quay.io/repository/0xff/combinary-collector-youtube)
+[![Build Status](https://dev.azure.com/volatile-void/pipes/_apis/build/status/piccaso.combinary-collector-youtube)](https://dev.azure.com/volatile-void/pipes/_build/latest?definitionId=4)
 
 ## Example usage:
 
