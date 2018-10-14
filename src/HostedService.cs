@@ -41,17 +41,24 @@ namespace YoutubeCollector {
 
             while (!stoppingToken.IsCancellationRequested) {
                 try {
-                    if (_settingsProvider.CollectVideos) await _videoCollector.ExecuteAsync(stoppingToken);
-                    if (_settingsProvider.CollectComments) await _commentCollector.ExecuteAsync(stoppingToken);
-                    if (_settingsProvider.CollectAnswers) await _answerCollector.ExecuteAsync(stoppingToken);
-                    if (_settingsProvider.CollectUrls) await _urlCollector.ExecuteAsync(stoppingToken);
-                }
-                catch (TaskCanceledException ex) {
-                    if (ex.CancellationToken == stoppingToken && stoppingToken.IsCancellationRequested) {
-                        /* goning down */
-                        break;
+                    try {
+                        if (_settingsProvider.CollectVideos) await _videoCollector.ExecuteAsync(stoppingToken);
+                        if (_settingsProvider.CollectComments) await _commentCollector.ExecuteAsync(stoppingToken);
+                        if (_settingsProvider.CollectAnswers) await _answerCollector.ExecuteAsync(stoppingToken);
+                        if (_settingsProvider.CollectUrls) await _urlCollector.ExecuteAsync(stoppingToken);
                     }
-                    _logger.LogError(ex, ex.Task.GetType().FullName);
+                    catch (TaskCanceledException ex) {
+                        if (ex.CancellationToken == stoppingToken && stoppingToken.IsCancellationRequested) {
+                            /* application shutdown */
+                            break;
+                        }
+
+                        throw;
+                    }
+                    catch (OperationCanceledException) {
+                        if (!stoppingToken.IsCancellationRequested) throw;
+                        /* application shutdown */
+                    }
                 }
                 catch (GoogleApiException ex) {
                     quotaExceeded = ex.Error.Errors.Any(e => e.Reason.Contains("Exceeded"));
@@ -66,6 +73,7 @@ namespace YoutubeCollector {
         }
 
         private async Task Idle(CancellationToken ct, bool quotaExceeded) {
+            if(ct.IsCancellationRequested) return;
             try {
                 var idleMinutes = _settingsProvider.IdleMinutes;
                 if (quotaExceeded) {

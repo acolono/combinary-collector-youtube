@@ -17,6 +17,15 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.2" />
+
+    <PackageReference Include="NSwag.MSBuild" Version="11.19.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
+
+  <Target Name="NSwag" AfterTargets="Build">
+    <Exec Command="$(NSwagExe_Core21) swagger2csclient /input:Lib/UrlBucketClient/swagger.json /output:Lib/UrlBucketClient/UrlBucketApiClient.cs /classname:UrlBucketApiClient /namespace:YoutubeCollector.Lib.UrlBucketClient" />
+  </Target>
 
 </Project>

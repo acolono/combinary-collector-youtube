@@ -44,7 +44,7 @@ namespace YoutubeCollector.Lib {
                 }
                 catch (Exception ex) {
                     howHard--;
-                    if (howHard <= 0) throw;
+                    if (howHard <= 0 || ct.IsCancellationRequested) throw;
                     skippedException?.Invoke(ex);
                     await Task.Delay(millisecondsDelay, ct);
                 }

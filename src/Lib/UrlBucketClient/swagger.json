@@ -1,0 +1,187 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1",
+    "title": "UrlBucket API",
+    "description": "Small wrapper around minio to store web assets.",
+    "contact": {
+      "name": "UrlBucket",
+      "url": "https://github.com/piccaso/url-bucket"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/piccaso/url-bucket/blob/master/LICENSE"
+    }
+  },
+  "paths": {
+    "/api/store-url": {
+      "get": {
+        "tags": [ "Api" ],
+        "summary": "Stores an asset after downloading it from the given URL.",
+        "operationId": "ApiStore-urlGet",
+        "consumes": [],
+        "produces": [ "text/plain", "application/json", "text/json" ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The URL where the asset is currently located",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userAgent",
+            "in": "query",
+            "description": "Optional, 'user-agent' header to use when downloading (default: null - no user agent)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "overwriteExisting",
+            "in": "query",
+            "description": "Optional, overwrite existing file (default: true)",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/ProblemDetails" }
+          },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    },
+    "/api/retrieve": {
+      "get": {
+        "tags": [ "Api" ],
+        "summary": "Retrieves a previously stored asset as an easy to consume model.",
+        "operationId": "ApiRetrieveGet",
+        "consumes": [],
+        "produces": [ "text/plain", "application/json", "text/json" ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The URL identifying the asset",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/DownloadFileModel" }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": { "$ref": "#/definitions/ProblemDetails" }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": { "$ref": "#/definitions/ProblemDetails" }
+          }
+        }
+      }
+    },
+    "/api/store-bytes": {
+      "post": {
+        "tags": [ "Api" ],
+        "summary": "Stores an asset (without downloading it).",
+        "operationId": "ApiStore-bytesPost",
+        "consumes": [ "application/json-patch+json", "application/json", "text/json", "application/*+json" ],
+        "produces": [ "text/plain", "application/json", "text/json" ],
+        "parameters": [
+          {
+            "name": "content",
+            "in": "body",
+            "description": "Content of the asset",
+            "required": true,
+            "schema": {
+              "format": "byte",
+              "type": "string"
+            }
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "description": "URL identifying the asset",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "contentType",
+            "in": "query",
+            "description": "Content type of the asset",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": { "$ref": "#/definitions/ProblemDetails" }
+          },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    },
+    "/api/retrieve-bytes": {
+      "get": {
+        "tags": [ "Api" ],
+        "summary": "Retrieves a previously stored asset as HTTP Response.",
+        "operationId": "ApiRetrieve-bytesGet",
+        "consumes": [],
+        "produces": [ "text/plain", "application/json", "text/json" ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The URL identifying the asset",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "format": "byte",
+              "type": "string"
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "404": { "description": "Not Found" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ProblemDetails": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "detail": { "type": "string" },
+        "instance": { "type": "string" }
+      }
+    },
+    "DownloadFileModel": {
+      "type": "object",
+      "properties": {
+        "objectName": { "type": "string" },
+        "etag": { "type": "string" },
+        "content": {
+          "format": "byte",
+          "type": "string"
+        },
+        "contentType": { "type": "string" }
+      }
+    }
+  }
+}
