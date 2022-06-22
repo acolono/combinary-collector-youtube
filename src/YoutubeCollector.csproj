@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" PrivateAssets="All" />
 
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.38.2.1488" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.2" />
 
     <PackageReference Include="NSwag.MSBuild" Version="11.20.1">
